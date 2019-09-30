@@ -43,8 +43,8 @@ DNSServer         dnsServer;              // Create the DNS object
 ESP8266WebServer  server(80);          // HTTP server
 
 // Wifi setup for connecting to an access point
-char* ssid = "Artifactory";
-char* password = "KEEP DOOR CLOSED";
+char* ssid = "";
+char* password = "";
 bool staticIP = false;
 IPAddress ip(10, 42, 0, 200); // where xx is the desired IP Address
 IPAddress gateway(10, 42, 0, 1); // set gateway to match your network
