@@ -91,7 +91,7 @@ const char index_html[] PROGMEM = R"(<head>
     xhr.send();
   }
   function show_comm(comm) {
-    comm = 'http://192.168.4.1'+comm;
+    comm = 'http://1.3.3.7'+comm;
     if(id('cb_comm').checked) id('lbl_comm').innerHTML=comm;
     else id('lbl_comm').innerHTML='';
   }
@@ -231,4 +231,3 @@ const char index_html[] PROGMEM = R"(<head>
   });
 </script>
 </body>)";
-
