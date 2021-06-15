@@ -20,6 +20,47 @@
 #define MODE_DRAW    0
 #define MODE_OFFLINE 1
 
+
+
+// https://intrinsically-sublime.github.io/FastLED-XY-Map-Generator/
+// XY mapping function preserving all pixel data.
+// Requires 771 Bytes's of SRAM and 7.71 ms/frame for WS2811 based LEDs.
+// You COULD save 0 Bytes's of SRAM and 0.00 ms/frame for WS2811 based LEDs.
+// Maximum frame rate for WS2811 based LEDs = 129 FPS using 1 output.
+// Wired in horizontal serpentine layout starting at the top left corner.
+
+// Parameters for width and height
+#define MATRIX_WIDTH 16
+#define MATRIX_HEIGHT 16
+
+uint16_t XY (uint8_t x, uint8_t y) {
+  // map anything outside of the matrix to the extra hidden pixel
+  if (x >= MATRIX_WIDTH || y >= MATRIX_HEIGHT) { return 256; }
+
+  const uint16_t XYTable[] = {
+       0,  31,  32,  63,  64,  95,  96, 127, 128, 159, 160, 191, 192, 223, 224, 255,
+       1,  30,  33,  62,  65,  94,  97, 126, 129, 158, 161, 190, 193, 222, 225, 254,
+       2,  29,  34,  61,  66,  93,  98, 125, 130, 157, 162, 189, 194, 221, 226, 253,
+       3,  28,  35,  60,  67,  92,  99, 124, 131, 156, 163, 188, 195, 220, 227, 252,
+       4,  27,  36,  59,  68,  91, 100, 123, 132, 155, 164, 187, 196, 219, 228, 251,
+       5,  26,  37,  58,  69,  90, 101, 122, 133, 154, 165, 186, 197, 218, 229, 250,
+       6,  25,  38,  57,  70,  89, 102, 121, 134, 153, 166, 185, 198, 217, 230, 249,
+       7,  24,  39,  56,  71,  88, 103, 120, 135, 152, 167, 184, 199, 216, 231, 248,
+       8,  23,  40,  55,  72,  87, 104, 119, 136, 151, 168, 183, 200, 215, 232, 247,
+       9,  22,  41,  54,  73,  86, 105, 118, 137, 150, 169, 182, 201, 214, 233, 246,
+      10,  21,  42,  53,  74,  85, 106, 117, 138, 149, 170, 181, 202, 213, 234, 245,
+      11,  20,  43,  52,  75,  84, 107, 116, 139, 148, 171, 180, 203, 212, 235, 244,
+      12,  19,  44,  51,  76,  83, 108, 115, 140, 147, 172, 179, 204, 211, 236, 243,
+      13,  18,  45,  50,  77,  82, 109, 114, 141, 146, 173, 178, 205, 210, 237, 242,
+      14,  17,  46,  49,  78,  81, 110, 113, 142, 145, 174, 177, 206, 209, 238, 241,
+      15,  16,  47,  48,  79,  80, 111, 112, 143, 144, 175, 176, 207, 208, 239, 240
+  };
+
+  return XYTable[(y * MATRIX_WIDTH) + x];
+}
+
+
+
 // Neopixel object
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, PIN_LED, NEO_GRB + NEO_KHZ800);
 
@@ -169,7 +210,8 @@ void loop() {
   server.handleClient();
 
   if (initial_demo) {
-    display_artifactory_logo();
+    //display_artifactory_logo();
+    hexcolour_snake(ledarray);
     initial_demo = false;
   }
 
@@ -195,6 +237,48 @@ void loop() {
   }
 }
 
+
+
+
+
+
+
+
+
+// Take an index for a normal c++ array layout and 
+// flip it to match led connection order
+// (from Artifactory LED Matrx)
+int remap_led_index(int pos) {
+  int x = pos % MATRIX_WIDTH;
+  int y = pos / MATRIX_WIDTH;
+  int index = XY(x, y);
+  return index;
+}
+
+// Setting up hexcolour
+// (assumeing LED matrix wired in snake)
+//void hexcolour_snake(const uint32_t *arr) {
+//  for (uint16_t t = 0; t < NUM_LEDS; t++) {
+//    int new_index = remap_led_index(t);
+//    if (new_index < 0 || new_index >= NUM_LEDS) {
+//      Serial.printf("hexcolour_snake OUT OF BOUNDS - t=%d, new_index=%d\n", t, new_index);
+//    }
+//    leds.setPixelColor(t, arr[new_index]);
+//  }
+//  leds.show();
+//}
+void hexcolour_snake(const uint32_t *arr) {
+  for (uint16_t t = 0; t < NUM_LEDS; t++) {
+    int new_index = remap_led_index(t);
+    pixels[new_index] = arr[t];
+  }
+  show_leds();
+}
+
+
+
+
+
 /* ----------------
     Artifactory Logo
    ---------------- */
@@ -218,6 +302,7 @@ const byte artifactory_logo[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+
 uint32_t wheel(int WheelPos) {
   WheelPos = 255 - WheelPos;
   if (WheelPos < 85) {
@@ -231,20 +316,20 @@ uint32_t wheel(int WheelPos) {
   return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-// Take an index for a normal c++ array layout and 
-// flip it to match led connection order
-int remap_led_index(int input_index) {
-  // Alternate rows are connected in different direction
-  // (snake scheme)
-  int c = 15 - input_index / 16, r = input_index % 16;
-  int index = 0;
-  if (r % 2 == 1) {
-    index = c + r * 16;
-  } else {
-    index = (15 - c) + r * 16;
-  }
-  return index;
-}
+//// Take an index for a normal c++ array layout and 
+//// flip it to match led connection order
+//int remap_led_index(int input_index) {
+//  // Alternate rows are connected in different direction
+//  // (snake scheme)
+//  int c = 15 - input_index / 16, r = input_index % 16;
+//  int index = 0;
+//  if (r % 2 == 1) {
+//    index = c + r * 16;
+//  } else {
+//    index = (15 - c) + r * 16;
+//  }
+//  return index;
+//}
 
 void display_artifactory_logo() {
   static byte idx = 0;
