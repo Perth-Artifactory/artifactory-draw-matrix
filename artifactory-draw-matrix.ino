@@ -53,7 +53,8 @@ IPAddress subnet(255, 255, 255, 0); // set subnet mask to match your
 
 
 // Forward declare functions
-void button_handler();
+void ICACHE_RAM_ATTR button_handler();
+//void button_handler();  // causes error with NodeMCU board firmware ver: 2.5.2
 void on_status();
 void on_change_color();
 void on_homepage();
@@ -183,7 +184,7 @@ void loop() {
   }
 
   if (button_clicked) {
-    if (abs(millis() - button_last) > 1000) {
+    if (millis() - button_last > 1000) {
       mode_index += 1;
       mode_index %= MODE_COUNT;
       Serial.print("Mode changed to ");
