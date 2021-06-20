@@ -9,18 +9,20 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <Adafruit_NeoPixel.h>
+#include "pixart.h"
 
+// Pins
 #define PIN_BUTTON  D2
 #define PIN_LED     D1
+
+// LED Matrix
 #define NUM_LEDS    256
-#define ROWS        16
-#define COLS        16
+#define MATRIX_WIDTH 16
+#define MATRIX_HEIGHT 16
 
 #define MODE_COUNT   2
 #define MODE_DRAW    0
 #define MODE_OFFLINE 1
-
-
 
 // https://intrinsically-sublime.github.io/FastLED-XY-Map-Generator/
 // XY mapping function preserving all pixel data.
@@ -29,9 +31,6 @@
 // Maximum frame rate for WS2811 based LEDs = 129 FPS using 1 output.
 // Wired in horizontal serpentine layout starting at the top left corner.
 
-// Parameters for width and height
-#define MATRIX_WIDTH 16
-#define MATRIX_HEIGHT 16
 
 uint16_t XY (uint8_t x, uint8_t y) {
   // map anything outside of the matrix to the extra hidden pixel
