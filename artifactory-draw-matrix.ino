@@ -200,7 +200,7 @@ void loop() {
 
   if (initial_demo) {
     //display_artifactory_logo();
-    hexcolour_snake(ledarray);
+    hexcolour_snake(ledarray_mask_img_sm_area);
     initial_demo = false;
   }
 
@@ -225,8 +225,8 @@ void loop() {
   //   button_clicked = false;
   // }
 
-  FastLED.show();  
-  FastLED.delay(1000/FRAMES_PER_SECOND);
+//  FastLED.show();  
+//  FastLED.delay(1000/FRAMES_PER_SECOND);
 }
 
 
