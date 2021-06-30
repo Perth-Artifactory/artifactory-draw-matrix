@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-path = R"C:\Users\tazar\Downloads\Artifactory_logo_MARK-HEX_ORANG.png"
+path = R"C:\Users\tazar\OneDrive\Files\Projects\Artifactory\LEDMatrix\Artifactory_logo_MARK-HEX_ORANG.png"
 img = cv2.imread(path,cv2.IMREAD_COLOR)
 
 height, width = img.shape[:2]
@@ -33,14 +33,9 @@ def gradient(pt1, pt2):
     angle = np.arctan2(pt1[1]-pt2[1], pt1[0]-pt2[0])
     return f'{grad}, {angle/np.pi*180} deg'
 
-colour = (0,0,0)
-width = 15
-linetype = cv2.LINE_AA
-
 # Top
 key_pt1 = (centre_x-75, 75)
 key_pt2 = (centre_x+75, 75)
-cv2.line(img, key_pt1, key_pt2, colour, width, linetype)
 
 # Base
 key_pt3 = (centre_x-300, 570)
@@ -71,6 +66,7 @@ key_pt11 = (int(key_pt6[0] + 200*np.cos(theta)), int(key_pt6[1] - 200*np.sin(the
 # Middle left lower
 key_pt12 = (int(key_pt3[0] - 200*np.cos(theta)), int(key_pt3[1] - 200*np.sin(theta)))
 
+# cv2.line(img, key_pt1, key_pt2, colour, width, linetype)
 # #cv2.line(img, key_pt1, key_pt3, colour, width, linetype)
 # cv2.line(img, key_pt2, key_pt4, colour, width, linetype)
 # cv2.line(img, key_pt3, key_pt5, colour, width, linetype)
@@ -83,6 +79,12 @@ key_pt12 = (int(key_pt3[0] - 200*np.cos(theta)), int(key_pt3[1] - 200*np.sin(the
 # cv2.line(img, key_pt1, key_pt8, colour, width, linetype)
 # cv2.line(img, key_pt3, key_pt12, colour, width, linetype)
 
+colour = (255,255,255)
+width = 10
+linetype = cv2.LINE_AA
+
+vec_img = np.zeros(img.shape)
+
 order = [
     key_pt10, key_pt9, key_pt8,
     key_pt1, key_pt2,
@@ -91,8 +93,8 @@ order = [
 ]
 
 for start, end in zip(order[:-1], order[1:]):
-    # cv2.line(img, start, end, colour, width, linetype)
-    cv2.arrowedLine(img, start, end, colour, width, linetype)
+    cv2.line(vec_img, start, end, colour, width, linetype)
+    # cv2.arrowedLine(img, start, end, colour, width, linetype)
 
 print(f"Top bar dist = {dist(key_pt1, key_pt2)}")
 print(f"Frame left gradient = {gradient(key_pt1, key_pt3)}, dist = {dist(key_pt1, key_pt3)}")
@@ -103,11 +105,23 @@ print(f"Foot bottom right dist = {dist(key_pt4, key_pt6)}")
 print(f"Tick bottom left gradient = {gradient(key_pt5, key_pt7)}, dist = {dist(key_pt5, key_pt7)}")
 
 
+mask_img = img.copy()
+mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
+(_, mask_img) = cv2.threshold(mask_img, 200, 255, cv2.THRESH_BINARY)
+
+mask_img_sm = cv2.resize(mask_img, (16, 16), interpolation=cv2.INTER_AREA)
+vec_img_sm = cv2.resize(vec_img, (16, 16), interpolation=cv2.INTER_AREA)
+
 cv2.imshow('image',img)
+cv2.imshow('mask_image',mask_img)
+cv2.imshow('mask_image_sm',mask_img_sm)
+cv2.imshow('vec_image', vec_img)
+cv2.imshow('vec_image_sm', vec_img_sm)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-# path_out = R"C:\Users\tazar\Downloads\out.png"
-# cv2.imwrite(path_out, img)
+path_out = R"C:\Users\tazar\OneDrive\Files\Projects\Artifactory\LEDMatrix\mask_img_sm-area.png"
+cv2.imwrite(path_out, mask_img_sm)
+path_out = R"C:\Users\tazar\OneDrive\Files\Projects\Artifactory\LEDMatrix\vec_img_sm-area-10.png"
+cv2.imwrite(path_out, vec_img_sm)
 
-# cv2.line(img, key_pt1, key_pt2,(0,0,0),15, cv2.LINE_8)
