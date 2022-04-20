@@ -9,6 +9,7 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <Adafruit_NeoPixel.h>
+#include "pixart.h"
 
 #define PIN_BUTTON  D2
 #define PIN_LED     D1
