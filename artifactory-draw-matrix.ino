@@ -67,7 +67,7 @@ Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, PIN_LED, NEO_GRB + NEO_KHZ8
 
 int mode_index = 0;
 
-byte brightness = 80;       // default brightness: 48
+byte brightness = 48;       // was: 80, default brightness: 48
 uint32_t pixels[NUM_LEDS];  // pixel buffer. this buffer allows you to set arbitrary
 // brightness without destroying the original color values
 
@@ -77,7 +77,7 @@ bool enableLEDs = false;
 
 // Wifi Setup
 // Based on stuff from https://www.hackster.io/rayburne/esp8266-captive-portal-5798ff
-const bool apMode = true;
+const bool apMode = false;
 const char *      ap_name = "ArtifactoryDraw";
 const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
 IPAddress         apIP(1, 3, 3, 7);    // Private network for server
@@ -210,11 +210,10 @@ void loop() {
   
   server.handleClient();
 
-  if (initial_demo) {
-    //display_artifactory_logo();
-    hexcolour_snake(ledarray);
-    initial_demo = false;
-  }
+  // if (initial_demo) {
+  //   display_artifactory_logo();
+  //   initial_demo = false;
+  // }
 
   if (initial_demo || mode_index == MODE_OFFLINE) {
     static int delayer = 100;
@@ -223,7 +222,7 @@ void loop() {
       display_artifactory_logo();
       delayer = 100;
     }
-    delayMicroseconds(100);
+    delayMicroseconds(100); // was: 100
   }
 
   if (button_clicked) {
@@ -256,18 +255,7 @@ int remap_led_index(int pos) {
   return index;
 }
 
-// Setting up hexcolour
-// (assumeing LED matrix wired in snake)
-//void hexcolour_snake(const uint32_t *arr) {
-//  for (uint16_t t = 0; t < NUM_LEDS; t++) {
-//    int new_index = remap_led_index(t);
-//    if (new_index < 0 || new_index >= NUM_LEDS) {
-//      Serial.printf("hexcolour_snake OUT OF BOUNDS - t=%d, new_index=%d\n", t, new_index);
-//    }
-//    leds.setPixelColor(t, arr[new_index]);
-//  }
-//  leds.show();
-//}
+/// Remap pixart to match led connection order using a lookup table
 void hexcolour_snake(const uint32_t *arr) {
   for (uint16_t t = 0; t < NUM_LEDS; t++) {
     int new_index = remap_led_index(t);
@@ -276,32 +264,15 @@ void hexcolour_snake(const uint32_t *arr) {
   show_leds();
 }
 
-
-
-
-
-/* ----------------
-    Artifactory Logo
-   ---------------- */
-
-const byte artifactory_logo[] = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-  0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0,
-  0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
-  0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0,
-  0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0,
-  0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
-  0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0,
-  0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
-  0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
-  0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0,
-  0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
+void hexcolour_snake_wheel(const uint32_t *arr, byte initial) {
+  for (uint16_t t = 0; t < NUM_LEDS; t++) {
+    int new_index = remap_led_index(t);
+    //pixels[new_index] = wheel((initial + t/16) & 0xFF) * ((arr[t] & 0xFF) / 255.0);
+    pixels[new_index] = wheel_bright((initial + t) & 0xFF, ((arr[t] & 0xFF) / 255.0));
+    //pixels[new_index] = wheel((initial + t) & 0xFF);
+  }
+  show_leds();
+}
 
 
 uint32_t wheel(int WheelPos) {
@@ -317,36 +288,28 @@ uint32_t wheel(int WheelPos) {
   return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-//// Take an index for a normal c++ array layout and 
-//// flip it to match led connection order
-//int remap_led_index(int input_index) {
-//  // Alternate rows are connected in different direction
-//  // (snake scheme)
-//  int c = 15 - input_index / 16, r = input_index % 16;
-//  int index = 0;
-//  if (r % 2 == 1) {
-//    index = c + r * 16;
-//  } else {
-//    index = (15 - c) + r * 16;
-//  }
-//  return index;
-//}
+uint32_t wheel_bright(int WheelPos, double b) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return leds.Color(b * (255 - WheelPos * 3), 0, b * (WheelPos * 3));
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return leds.Color(0, b * (WheelPos * 3), b * (255 - WheelPos * 3));
+  }
+  WheelPos -= 170;
+  return leds.Color(b * (WheelPos * 3), b * (255 - WheelPos * 3), 0);
+}
 
 void display_artifactory_logo() {
   static byte idx = 0;
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    int index = remap_led_index(i);
-    
-    // every pixel color is 6 bytes storing the hex value
-
-    pixels[index] = wheel((i + idx) & 0xFF) * artifactory_logo[i];
-  }
+  //hexcolour_snake(pixart_artifactory_logo);
+  hexcolour_snake_wheel(pixart_artifactory_logo, idx);
 
   idx += 1;
   idx %= 256;
 
-  show_leds();
 }
 
 /* ----------------
