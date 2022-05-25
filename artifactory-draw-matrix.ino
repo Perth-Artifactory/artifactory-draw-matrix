@@ -186,6 +186,7 @@ void setup() {
     Serial.println(" in your browser");
   }
   
+  server.enableCORS(true);
 
   // Set server callback functions
   server.onNotFound(on_homepage);
