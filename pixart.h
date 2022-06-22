@@ -20,3 +20,13 @@ uint32_t pixart_artifactory_logo[] = {
     0x003C3C3C, 0x00606060, 0x00606060, 0x00606060, 0x00383838, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00363636, 0x00606060, 0x00606060, 0x00606060, 0x003E3E3E, 
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 
     };                       
+
+
+// Mario: https://1.bp.blogspot.com/-SN7l3p_K6bc/UjVkFUlYFNI/AAAAAAAAANA/WcTUw9zi9NU/s1600/mario_3501733.jpg
+
+// Pokeball: http://pm1.narvii.com/6328/01a360d15dc058ad413600867860c04e396fc88e_hq.jpg
+
+// Link: https://i.pinimg.com/736x/59/65/9a/59659aaa84ed758fa4f7ef35b497fe7e.jpg
+
+// Lightning: https://www.vhv.rs/dpng/d/418-4187254_16-bit-lightning-bolt-png-download-lightning-bolt.png
+
